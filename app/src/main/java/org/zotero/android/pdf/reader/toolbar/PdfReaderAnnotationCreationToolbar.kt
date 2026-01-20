@@ -275,7 +275,7 @@ internal fun BoxScope.PdfReaderAnnotationCreationToolbar(
             ) {
                 PdfReaderAnnotationCreationButton(
                     isEnabled = true,
-                    iconInt = Drawables.baseline_keyboard_arrow_left_24,
+                    iconInt = Drawables.ic_lock_solid,
                     onButtonClick = vMInterface::toggleZoomLockClick
                 )
             }
