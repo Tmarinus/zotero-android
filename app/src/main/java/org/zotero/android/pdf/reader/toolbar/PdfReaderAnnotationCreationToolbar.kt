@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.pspdfkit.annotations.actions.NamedAction
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -161,7 +162,7 @@ internal fun BoxScope.PdfReaderAnnotationCreationToolbar(
                 orientation = Orientation.Horizontal,
                 interactionSource = draggableInteractionSource
             )
-            .height(520.dp)
+            .height(550.dp)
             .padding(start = 16.dp, top = 16.dp)
             .background(
                 color = snapAreaBackgroundColor,
@@ -210,6 +211,52 @@ internal fun BoxScope.PdfReaderAnnotationCreationToolbar(
             }
 
             Spacer(modifier = Modifier.height(48.dp))
+
+            TooltipBox(
+                positionProvider = rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Above,
+                    4.dp
+                ),
+                tooltip = {
+                    PlainTooltip() {
+                        Text(
+                            stringResource(
+                                Strings.accessibility_pdf_previous_page
+                            )
+                        )
+                    }
+                },
+                state = rememberTooltipState()
+            ) {
+                PdfReaderAnnotationCreationButton(
+                    isEnabled = true,
+                    iconInt = Drawables.baseline_keyboard_arrow_left_24,
+                    onButtonClick = vMInterface::onPreviousPageClick
+                )
+            }
+
+            TooltipBox(
+                positionProvider = rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Above,
+                    4.dp
+                ),
+                tooltip = {
+                    PlainTooltip() {
+                        Text(
+                            stringResource(
+                                Strings.accessibility_pdf_next_page
+                            )
+                        )
+                    }
+                },
+                state = rememberTooltipState()
+            ) {
+                PdfReaderAnnotationCreationButton(
+                    isEnabled = true,
+                    iconInt = Drawables.baseline_keyboard_arrow_right_24,
+                    onButtonClick = vMInterface::onNextPageClick
+                )
+            }
 
             TooltipBox(
                 positionProvider = rememberTooltipPositionProvider(

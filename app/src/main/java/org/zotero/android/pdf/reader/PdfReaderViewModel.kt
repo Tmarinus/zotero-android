@@ -282,6 +282,16 @@ class PdfReaderViewModel @Inject constructor(
         }
 
         onStorePageFlow.tryEmit(event.pageIndex)
+
+//        Tried to include it here but was unreliable.
+//        restoreZoomForPage(event.pageIndex)
+    }
+
+    private fun setZoomForPage(zoomArea: RectF, pageIndex: Int) {
+        if (zoomArea != null) {
+            pdfFragment.zoomTo(zoomArea, pageIndex, 0)
+            Timber.d("ZOOM restored $pageIndex visible rect: $zoomArea")
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -498,6 +508,10 @@ class PdfReaderViewModel @Inject constructor(
                 if (state == ScrollState.DRAGGED) {
                     setBottomBarVisibility(false)
                 }
+//                Tried to keep track of zoom location but better on page change.
+//                if (state == ScrollState.IDLE) {
+//                    storeCurrentZoomedRect(pdfFragment.pageIndex)
+//                }
             }
 
             override fun onDocumentScrolled(p0: Int, p1: Int, p2: Int, p3: Int, p4: Int, p5: Int) {
@@ -509,6 +523,14 @@ class PdfReaderViewModel @Inject constructor(
 
     private fun setBottomBarVisibility(isVisible: Boolean) {
         pdfUiFragment.setUserInterfaceVisible(isVisible, true)
+    }
+
+
+    private fun getCurrentZoomedRect(pageIndex: Int): RectF {
+        val zoomArea = RectF()
+        val check_worked = pdfFragment.getVisiblePdfRect(zoomArea, pageIndex)
+        Timber.d("ZOOM store $pageIndex visible rect: $check_worked $zoomArea")
+        return zoomArea
     }
 
     private fun addDocumentListenerOnInit() {
@@ -536,6 +558,16 @@ class PdfReaderViewModel @Inject constructor(
                 decideTopBarAndBottomBarVisibility(clickedAnnotation)
                 return false
             }
+//            Tried to keep track of zoom area but this was tricky, better inject before page change somehow.
+//
+//            override fun onDocumentZoomed(
+//                document: PdfDocument,
+//                pageIndex: Int,
+//                scaleFactor: Float
+//            ) {
+//                super.onDocumentZoomed(document, pageIndex, scaleFactor)
+//                storeCurrentZoomedRect(pageIndex)
+//            }
         })
     }
 
@@ -2206,6 +2238,7 @@ class PdfReaderViewModel @Inject constructor(
         return PdfActivityConfiguration.Builder(context)
             .scrollDirection(scrollDirection)
             .scrollMode(scrollMode)
+            .setVolumeButtonsNavigationEnabled(isVolumeButtonsNavigationEnabled = true)
             .fitMode(fitMode)
             .layoutMode(pageMode)
             .invertColors(isCalculatedThemeDark)
@@ -2836,6 +2869,31 @@ class PdfReaderViewModel @Inject constructor(
 
     override fun onCloseClick() {
         toggleToolbarButton()
+    }
+
+    override fun onPreviousPageClick() {
+        val currentPageIndex = pdfFragment.pageIndex
+        if (currentPageIndex <= 0) {
+            return
+        }
+        pdfFragment.setDocumentInteractionEnabled(true)
+        pdfUiFragment.setDocumentInteractionEnabled(true)
+        val prevZoomArea = getCurrentZoomedRect(currentPageIndex)
+        pdfFragment.setPageIndex(currentPageIndex - 1, false)
+        setZoomForPage(prevZoomArea,currentPageIndex - 1)
+    }
+
+    override fun onNextPageClick() {
+        val currentPageIndex = pdfFragment.pageIndex
+        if (currentPageIndex == document.pageCount - 1) {
+            return
+        }
+//        pdfUiFragment.setDo
+        pdfFragment.setDocumentInteractionEnabled(false)
+        pdfUiFragment.setDocumentInteractionEnabled(false)
+        val prevZoomArea = getCurrentZoomedRect(currentPageIndex)
+        pdfFragment.setPageIndex(currentPageIndex + 1, false)
+        setZoomForPage(prevZoomArea,currentPageIndex + 1)
     }
 
     private fun add(annotations: List<Annotation>) {
