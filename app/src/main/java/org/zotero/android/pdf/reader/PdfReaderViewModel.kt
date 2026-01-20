@@ -2232,7 +2232,6 @@ class PdfReaderViewModel @Inject constructor(
         return PdfActivityConfiguration.Builder(context)
             .scrollDirection(scrollDirection)
             .scrollMode(scrollMode)
-            .setVolumeButtonsNavigationEnabled(isVolumeButtonsNavigationEnabled = true)
             .fitMode(fitMode)
             .layoutMode(pageMode)
             .invertColors(isCalculatedThemeDark)
