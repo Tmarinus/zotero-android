@@ -43,6 +43,7 @@ interface PdfReaderVMInterface {
     fun onUndoClick()
     fun onRedoClick()
     fun onCloseClick()
+    fun toggleZoomLockClick()
     fun onNextPageClick()
     fun onPreviousPageClick()
     fun setSidebarSliderSelectedOption(optionOrdinal: Int)

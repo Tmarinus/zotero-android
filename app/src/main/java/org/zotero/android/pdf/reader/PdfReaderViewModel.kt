@@ -244,6 +244,10 @@ class PdfReaderViewModel @Inject constructor(
 
     private val handler = Handler(context.mainLooper)
 
+    private var zoomLocked: Boolean = false
+    private var disableDocumentScrollListener: Boolean = false
+    private var zoomArea: RectF = RectF()
+
     override var annotationMaxSideSize = 0
 
     override var toolColors: MutableMap<AnnotationTool, String> = mutableMapOf()
@@ -285,12 +289,34 @@ class PdfReaderViewModel @Inject constructor(
 
 //        Tried to include it here but was unreliable.
 //        restoreZoomForPage(event.pageIndex)
+        // Used for following links when zoomlock is on
+        if (zoomLocked) {
+            val x = pdfFragment.isZoomingEnabled
+            Timber.d("ZOOM adjusting posivtion on page change $x")
+            pdfFragment.zoomTo(zoomArea, event.pageIndex, 0)
+        }
     }
 
-    private fun setZoomForPage(zoomArea: RectF, pageIndex: Int) {
-        if (zoomArea != null) {
-            pdfFragment.zoomTo(zoomArea, pageIndex, 0)
-            Timber.d("ZOOM restored $pageIndex visible rect: $zoomArea")
+    private fun toggleLockZoom() {
+        if (zoomLocked) {
+            zoomLocked = false
+            zoomArea = RectF()
+            pdfFragment.isScrollingEnabled = true
+            pdfFragment.isZoomingEnabled = true
+            val x = pdfFragment.isZoomingEnabled
+            Timber.d("ZOOM Disable lock $x")
+//            pdfUiFragment.setDocumentInteractionEnabled(false)
+        } else {
+            val pageIndex = pdfFragment.pageIndex
+            val check_worked = pdfFragment.getVisiblePdfRect(zoomArea, pageIndex)
+            if (!check_worked) {
+                return
+            }
+            zoomLocked = true
+            pdfFragment.isScrollingEnabled = false
+            pdfFragment.isZoomingEnabled = false
+            val x = pdfFragment.isZoomingEnabled
+            Timber.d("ZOOM Enable lock $x")
         }
     }
 
@@ -509,8 +535,13 @@ class PdfReaderViewModel @Inject constructor(
                     setBottomBarVisibility(false)
                 }
 //                Tried to keep track of zoom location but better on page change.
-//                if (state == ScrollState.IDLE) {
-//                    storeCurrentZoomedRect(pdfFragment.pageIndex)
+//                if (zoomLocked && state == ScrollState.IDLE && !disableDocumentScrollListener) {
+//                    val pageIndex = pdfFragment.pageIndex
+//                    val x = pdfFragment.isZoomingEnabled
+//                    Timber.d("ZOOM adjusting position after scroll $x")
+//                    disableDocumentScrollListener = true
+//                    pdfFragment.zoomTo(zoomArea, pageIndex, 0)
+//                    disableDocumentScrollListener = false
 //                }
             }
 
@@ -2871,16 +2902,25 @@ class PdfReaderViewModel @Inject constructor(
         toggleToolbarButton()
     }
 
+    override fun toggleZoomLockClick() {
+        toggleLockZoom()
+    }
+
     override fun onPreviousPageClick() {
         val currentPageIndex = pdfFragment.pageIndex
         if (currentPageIndex <= 0) {
             return
         }
-        pdfFragment.setDocumentInteractionEnabled(true)
-        pdfUiFragment.setDocumentInteractionEnabled(true)
-        val prevZoomArea = getCurrentZoomedRect(currentPageIndex)
-        pdfFragment.setPageIndex(currentPageIndex - 1, false)
-        setZoomForPage(prevZoomArea,currentPageIndex - 1)
+//        pdfFragment.setDocumentInteractionEnabled(true)
+//        pdfUiFragment.setDocumentInteractionEnabled(true)
+//        val prevZoomArea = getCurrentZoomedRect(currentPageIndex)
+        if (zoomLocked) {
+            Timber.d("ZOOM moving prev page by zoomto")
+            pdfFragment.zoomTo(zoomArea, currentPageIndex - 1, 0)
+        } else {
+            pdfFragment.setPageIndex(currentPageIndex - 1, false)
+        }
+//        setZoomForPage(prevZoomArea,currentPageIndex - 1)
     }
 
     override fun onNextPageClick() {
@@ -2889,11 +2929,16 @@ class PdfReaderViewModel @Inject constructor(
             return
         }
 //        pdfUiFragment.setDo
-        pdfFragment.setDocumentInteractionEnabled(false)
-        pdfUiFragment.setDocumentInteractionEnabled(false)
-        val prevZoomArea = getCurrentZoomedRect(currentPageIndex)
-        pdfFragment.setPageIndex(currentPageIndex + 1, false)
-        setZoomForPage(prevZoomArea,currentPageIndex + 1)
+//        pdfFragment.setDocumentInteractionEnabled(false)
+//        pdfUiFragment.setDocumentInteractionEnabled(false)
+//        val prevZoomArea = getCurrentZoomedRect(currentPageIndex)
+//        pdfFragment.setPageIndex(currentPageIndex + 1, false)
+//        setZoomForPage(prevZoomArea,currentPageIndex + 1)
+        if (zoomLocked) {
+            pdfFragment.zoomTo(zoomArea, currentPageIndex + 1, 0)
+        } else {
+            pdfFragment.setPageIndex(currentPageIndex + 1, false)
+        }
     }
 
     private fun add(annotations: List<Annotation>) {
