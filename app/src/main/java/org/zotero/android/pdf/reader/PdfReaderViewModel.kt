@@ -413,14 +413,24 @@ class PdfReaderViewModel @Inject constructor(
         searchResultHighlighter.setSearchResults(result.searchResult)
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+        @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEvent(event: EventBusConstants.PdfReaderNavigateNextPage) {
-        pdfFragment.setPageIndex(pdfFragment.pageIndex + 1, false)
+        val currentZoomLock = zoomLocked
+        val pageIndex = pdfFragment.pageIndex
+        zoomLocked = pdfFragment.getVisiblePdfRect(zoomArea, pageIndex)
+        Timber.d("VOLUME next page called")
+        onNextPageClick()
+        zoomLocked = currentZoomLock
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEvent(event: EventBusConstants.PdfReaderNavigatePreviousPage) {
-        pdfFragment.setPageIndex(pdfFragment.pageIndex - 1, false)
+        val currentZoomLock = zoomLocked
+        val pageIndex = pdfFragment.pageIndex
+        zoomLocked = pdfFragment.getVisiblePdfRect(zoomArea, pageIndex)
+        Timber.d("VOLUME previous page called")
+        onPreviousPageClick()
+        zoomLocked = currentZoomLock
     }
 
     private fun update(pdfSettings: PDFSettings) {
