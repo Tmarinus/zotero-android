@@ -557,6 +557,9 @@
     <string name="accessibility_pdf_search_pdf">Search PDF</string>
     <string name="accessibility_pdf_redo">Redo</string>
     <string name="accessibility_pdf_undo">Undo</string>
+    <string name="accessibility_pdf_next_page">Next page</string>
+    <string name="accessibility_pdf_previous_page">Previous page</string>
+    <string name="accessibility_pdf_toggle_zoom_lock">Toggle zoom lock</string>
     <string name="accessibility_pdf_toggle_annotation_toolbar">Toggle annotation toolbar</string>
     <string name="accessibility_pdf_show_more_tools">Show more</string>
     <string name="accessibility_htmlepub_search_html">Search Website</string>
