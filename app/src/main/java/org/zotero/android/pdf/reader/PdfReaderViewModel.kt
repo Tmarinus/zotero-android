@@ -244,6 +244,9 @@ class PdfReaderViewModel @Inject constructor(
 
     private val handler = Handler(context.mainLooper)
 
+    private var zoomLocked: Boolean = false
+    private var zoomArea: RectF = RectF()
+
     override var annotationMaxSideSize = 0
 
     override var toolColors: MutableMap<AnnotationTool, String> = mutableMapOf()
@@ -282,6 +285,29 @@ class PdfReaderViewModel @Inject constructor(
         }
 
         onStorePageFlow.tryEmit(event.pageIndex)
+
+        // For some reason this makes switching pages a lot smoother (still not perfect)
+        if (zoomLocked) {
+            pdfFragment.zoomTo(zoomArea, event.pageIndex, 0)
+        }
+    }
+
+    private fun toggleLockZoom() {
+        if (zoomLocked) {
+            zoomLocked = false
+            zoomArea = RectF()
+            pdfFragment.isScrollingEnabled = true
+            pdfFragment.isZoomingEnabled = true
+        } else {
+            val pageIndex = pdfFragment.pageIndex
+            val check_worked = pdfFragment.getVisiblePdfRect(zoomArea, pageIndex)
+            if (!check_worked) {
+                return
+            }
+            zoomLocked = true
+            pdfFragment.isScrollingEnabled = false
+            pdfFragment.isZoomingEnabled = false
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -2856,6 +2882,35 @@ class PdfReaderViewModel @Inject constructor(
 
     override fun onCloseClick() {
         toggleToolbarButton()
+    }
+
+    override fun toggleZoomLockClick() {
+        toggleLockZoom()
+    }
+
+    override fun onPreviousPageClick() {
+        val currentPageIndex = pdfFragment.pageIndex
+        if (currentPageIndex <= 0) {
+            return
+        }
+        if (zoomLocked) {
+            Timber.d("ZOOM moving prev page by zoomto")
+            pdfFragment.zoomTo(zoomArea, currentPageIndex - 1, 0)
+        } else {
+            pdfFragment.setPageIndex(currentPageIndex - 1, false)
+        }
+    }
+
+    override fun onNextPageClick() {
+        val currentPageIndex = pdfFragment.pageIndex
+        if (currentPageIndex == document.pageCount - 1) {
+            return
+        }
+        if (zoomLocked) {
+            pdfFragment.zoomTo(zoomArea, currentPageIndex + 1, 0)
+        } else {
+            pdfFragment.setPageIndex(currentPageIndex + 1, false)
+        }
     }
 
     private fun add(annotations: List<Annotation>) {

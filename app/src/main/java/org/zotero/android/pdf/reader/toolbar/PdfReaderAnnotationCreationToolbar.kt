@@ -161,7 +161,7 @@ internal fun BoxScope.PdfReaderAnnotationCreationToolbar(
                 orientation = Orientation.Horizontal,
                 interactionSource = draggableInteractionSource
             )
-            .height(520.dp)
+            .height(590.dp)
             .padding(start = 16.dp, top = 16.dp)
             .background(
                 color = snapAreaBackgroundColor,
@@ -253,6 +253,75 @@ internal fun BoxScope.PdfReaderAnnotationCreationToolbar(
                     isEnabled = vMInterface.canRedo(),
                     iconInt = Drawables.redo_24px,
                     onButtonClick = vMInterface::onRedoClick
+                )
+            }
+
+            TooltipBox(
+                positionProvider = rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Above,
+                    4.dp
+                ),
+                tooltip = {
+                    PlainTooltip() {
+                        Text(
+                            stringResource(
+                                Strings.accessibility_pdf_toggle_zoom_lock
+                            )
+                        )
+                    }
+                },
+                state = rememberTooltipState()
+            ) {
+                PdfReaderAnnotationCreationButton(
+                    isEnabled = true,
+                    iconInt = Drawables.ic_lock_solid,
+                    onButtonClick = vMInterface::toggleZoomLockClick
+                )
+            }
+
+            TooltipBox(
+                positionProvider = rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Above,
+                    4.dp
+                ),
+                tooltip = {
+                    PlainTooltip() {
+                        Text(
+                            stringResource(
+                                Strings.accessibility_pdf_previous_page
+                            )
+                        )
+                    }
+                },
+                state = rememberTooltipState()
+            ) {
+                PdfReaderAnnotationCreationButton(
+                    isEnabled = true,
+                    iconInt = Drawables.baseline_keyboard_arrow_left_24,
+                    onButtonClick = vMInterface::onPreviousPageClick
+                )
+            }
+
+            TooltipBox(
+                positionProvider = rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Above,
+                    4.dp
+                ),
+                tooltip = {
+                    PlainTooltip() {
+                        Text(
+                            stringResource(
+                                Strings.accessibility_pdf_next_page
+                            )
+                        )
+                    }
+                },
+                state = rememberTooltipState()
+            ) {
+                PdfReaderAnnotationCreationButton(
+                    isEnabled = true,
+                    iconInt = Drawables.baseline_keyboard_arrow_right_24,
+                    onButtonClick = vMInterface::onNextPageClick
                 )
             }
 
